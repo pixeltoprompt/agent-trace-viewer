@@ -1,0 +1,204 @@
+/* canvas.css — design tokens + graph canvas. Drop into src/styles/canvas.css
+   and import once in main.tsx.
+
+   Palette rule: the graph is graphite. Saturation is reserved for meaning —
+   signal green marks the executed path, ember marks a fault, and nothing else
+   on the canvas is allowed to be colourful enough to compete with them. */
+
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap");
+
+:root {
+  --ink: #0d1015;        /* canvas, cold black */
+  --slab: #161b22;       /* node face */
+  --slab-lift: #1c222b;  /* hover */
+  --rule: #2b333e;       /* hairlines, idle strokes */
+  --text: #dfe5ee;
+  --text-dim: #79838f;
+  --signal: #6ee7b7;     /* executed */
+  --ember: #ff6b57;      /* fault — the only alarm colour */
+  --amber: #e8b04b;      /* retry */
+
+  --sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --r: 6px;
+  --dur: 140ms;
+}
+
+/* ---------------------------------------------------------------- canvas -- */
+
+.canvas-frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 420px;
+  background: var(--ink);
+  border: 1px solid var(--rule);
+  border-radius: var(--r);
+  overflow: hidden;
+}
+
+.canvas-grid { color: #1b222c; }
+
+.react-flow__controls {
+  box-shadow: none;
+  border: 1px solid var(--rule);
+  border-radius: var(--r);
+  overflow: hidden;
+}
+.react-flow__controls-button {
+  background: var(--slab);
+  border-bottom: 1px solid var(--rule);
+  fill: var(--text-dim);
+}
+.react-flow__controls-button:hover { background: var(--slab-lift); fill: var(--text); }
+
+.react-flow__handle {
+  width: 5px;
+  height: 5px;
+  background: var(--rule);
+  border: none;
+}
+
+/* ----------------------------------------------------------------- edges -- */
+
+.react-flow__edge.edge-idle .react-flow__edge-path { stroke: var(--rule); }
+.react-flow__edge.edge-idle .react-flow__arrowhead polyline,
+.react-flow__edge.edge-idle marker path { fill: var(--rule); stroke: var(--rule); }
+
+.react-flow__edge.edge-live .react-flow__edge-path { stroke: var(--signal); opacity: 0.85; }
+.react-flow__edge.edge-live marker path { fill: var(--signal); stroke: var(--signal); }
+
+.react-flow__edge-text {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  fill: var(--text-dim);
+}
+.react-flow__edge-textbg { fill: var(--ink); }
+
+/* ----------------------------------------------------------------- nodes -- */
+
+.node-shell { position: relative; width: 196px; }
+
+/* one plate per attempt — a node that ran twice is physically thicker */
+.plate {
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--rule);
+  border-radius: var(--r);
+  background: var(--ink);
+  z-index: 0;
+}
+
+.node-face {
+  position: relative;
+  z-index: 1;
+  background: var(--slab);
+  border: 1px solid var(--rule);
+  border-left: 2px solid var(--rule);
+  border-radius: var(--r);
+  padding: 10px 12px;
+  transition: background var(--dur) ease, border-color var(--dur) ease;
+}
+
+.node-shell.is-idle .node-face { background: transparent; opacity: 0.55; }
+.node-shell.is-live .node-face { border-left-color: var(--signal); }
+.node-shell.is-fault .node-face { border-left-color: var(--ember); background: #1d1517; }
+.node-shell.is-active .node-face { background: var(--slab-lift); border-color: var(--text-dim); }
+.node-shell:hover .node-face { background: var(--slab-lift); }
+
+.node-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.node-label {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--amber);
+  border: 1px solid color-mix(in srgb, var(--amber) 40%, transparent);
+  border-radius: 3px;
+  padding: 0 4px;
+  line-height: 15px;
+  flex-shrink: 0;
+}
+
+/* measured values only — mono is never used for labels */
+.node-meter {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.meter-value { color: var(--text-dim); }
+.meter-value.dim { opacity: 0.65; }
+.meter-fault { color: var(--ember); letter-spacing: 0.04em; }
+
+/* terminals stay small — they are punctuation, not steps */
+.terminal {
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 26px;
+  border: 1px dashed var(--rule);
+  border-radius: 13px;
+  background: var(--ink);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  opacity: 0.6;
+}
+.terminal.is-live { opacity: 1; border-color: var(--signal); color: var(--signal); }
+
+/* ------------------------------------------------------------------- key -- */
+
+.canvas-key {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  display: flex;
+  gap: 14px;
+  padding: 7px 11px;
+  background: color-mix(in srgb, var(--ink) 88%, transparent);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--rule);
+  border-radius: var(--r);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+  pointer-events: none;
+}
+.canvas-key span { display: flex; align-items: center; gap: 6px; }
+
+.key-swatch { width: 8px; height: 8px; border-radius: 2px; border: 1px solid var(--rule); }
+.key-swatch.live { background: var(--signal); border-color: var(--signal); }
+.key-swatch.idle { background: transparent; }
+.key-swatch.fault { background: var(--ember); border-color: var(--ember); }
+.key-dash {
+  width: 14px;
+  height: 0;
+  border-top: 1px dashed var(--text-dim);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .node-face { transition: none; }
+}

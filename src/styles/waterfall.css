@@ -1,0 +1,203 @@
+/* waterfall.css — timeline. Import after canvas.css; reuses its tokens.
+
+   Colour discipline carried over from the canvas: the bar is signal green when a
+   step succeeded and ember when it faulted, and nothing else here is allowed to be
+   saturated. Model calls and tool calls are told apart by which ribbon track they
+   sit on, not by hue — so on a screenshot of a failing run, your eye lands on the
+   fault and nowhere else. */
+
+.wf {
+  --gutter: 176px;
+  --lane-h: 34px;
+  background: var(--ink);
+  border: 1px solid var(--rule);
+  border-radius: var(--r);
+  padding: 4px 0 0;
+  font-family: var(--sans);
+  outline: none;
+}
+.wf:focus-visible { box-shadow: 0 0 0 2px color-mix(in srgb, var(--signal) 45%, transparent); }
+
+.wf-row {
+  display: grid;
+  grid-template-columns: var(--gutter) 1fr;
+  align-items: center;
+  min-height: var(--lane-h);
+  border-bottom: 1px solid color-mix(in srgb, var(--rule) 55%, transparent);
+}
+.wf-row:last-of-type { border-bottom: none; }
+
+.wf-gutter {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 0 12px;
+  overflow: hidden;
+  border-right: 1px solid var(--rule);
+  height: 100%;
+  align-content: center;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.wf-track {
+  position: relative;
+  height: 100%;
+  min-width: 0;
+}
+
+/* ----------------------------------------------------------------- ruler -- */
+
+.wf-ruler { min-height: 26px; background: color-mix(in srgb, var(--slab) 45%, transparent); }
+
+.wf-axis-label,
+.wf-sub {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  opacity: 0.7;
+}
+
+.wf-tick { position: absolute; top: 0; height: 100%; }
+.wf-tick i {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 100%;
+  background: var(--rule);
+}
+.wf-tick em {
+  position: absolute;
+  top: 6px;
+  left: 5px;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  font-style: normal;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.wf-tick:last-child em { left: auto; right: 5px; }
+
+/* ----------------------------------------------------------------- lanes -- */
+
+.wf-index {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  opacity: 0.55;
+}
+
+.wf-node {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wf-attempt {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  color: var(--amber);
+  border: 1px solid color-mix(in srgb, var(--amber) 35%, transparent);
+  border-radius: 3px;
+  padding: 0 3px;
+  line-height: 14px;
+}
+
+.wf-step { cursor: pointer; transition: background var(--dur) ease; }
+.wf-step:hover { background: color-mix(in srgb, var(--slab) 60%, transparent); }
+.wf-step.is-active { background: var(--slab); }
+.wf-step.is-active .wf-gutter { box-shadow: inset 2px 0 0 var(--text-dim); }
+.wf-step.is-fault.is-active .wf-gutter { box-shadow: inset 2px 0 0 var(--ember); }
+
+/* ------------------------------------------------------------------ bars -- */
+
+.wf-bar {
+  position: absolute;
+  top: 7px;
+  height: 13px;
+  min-width: 2px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--signal) 78%, transparent);
+}
+.wf-step.is-fault .wf-bar { background: var(--ember); }
+
+.wf-bar-label {
+  position: absolute;
+  left: calc(100% + 7px);
+  top: -1px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-style: normal;
+  color: var(--text-dim);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* two ribbon tracks: model calls above, tool calls below */
+.wf-ribbon {
+  position: absolute;
+  height: 3px;
+  min-width: 2px;
+  border-radius: 2px;
+  background: var(--text-dim);
+  opacity: 0.75;
+}
+.wf-ribbon.is-llm { top: 23px; }
+.wf-ribbon.is-tool { top: 27px; opacity: 0.45; }
+.wf-ribbon.is-fault { background: var(--ember); opacity: 1; }
+
+/* --------------------------------------------------------------- overhead -- */
+
+.wf-overhead .wf-node { color: var(--text-dim); font-weight: 400; }
+
+.wf-gap {
+  position: absolute;
+  top: 10px;
+  height: 8px;
+  border-radius: 1px;
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--rule) 0 2px,
+    transparent 2px 5px
+  );
+}
+
+/* -------------------------------------------------------------------- key -- */
+
+.wf-key {
+  display: flex;
+  gap: 16px;
+  padding: 9px 12px 10px;
+  border-top: 1px solid var(--rule);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+}
+.wf-key span { display: flex; align-items: center; gap: 6px; }
+
+.wf-key-bar {
+  width: 16px; height: 8px; border-radius: 2px;
+  background: color-mix(in srgb, var(--signal) 78%, transparent);
+}
+.wf-key-ribbon { width: 16px; height: 3px; border-radius: 2px; background: var(--text-dim); }
+.wf-key-ribbon.is-tool { opacity: 0.45; }
+.wf-key-gap {
+  width: 16px; height: 8px; border-radius: 1px;
+  background: repeating-linear-gradient(-45deg, var(--rule) 0 2px, transparent 2px 5px);
+}
+
+@media (max-width: 720px) {
+  .wf { --gutter: 122px; }
+  .wf-index, .wf-bar-label { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wf-step { transition: none; }
+}

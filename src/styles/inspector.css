@@ -1,0 +1,305 @@
+/* inspector.css — step detail panel. Depends on tokens from canvas.css.
+
+   Diff rows use a glyph column (+ − →) as the primary signal so the panel stays
+   readable in greyscale and for colour-blind users; tint is reinforcement, never the
+   only cue. Green = added, amber = changed, dim strike = removed, ember stays
+   reserved for actual faults. */
+
+.ins {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: var(--slab);
+  border: 1px solid var(--rule);
+  border-radius: var(--r);
+}
+
+.ins.is-empty { display: grid; align-content: center; gap: 7px; text-align: center; padding: 20px; }
+.ins-hint { margin: 0; font-size: 12.5px; color: var(--text-dim); line-height: 1.5; }
+.ins-hint.dim { font-family: var(--mono); font-size: 10.5px; opacity: 0.55; }
+
+/* ---------------------------------------------------------------- header -- */
+
+.ins-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 14px 0;
+}
+
+.ins-title { display: flex; align-items: center; gap: 7px; min-width: 0; }
+
+.ins-node {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.07em;
+  padding: 2px 5px;
+  border-radius: 3px;
+  border: 1px solid var(--rule);
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.tag.is-warn { color: var(--amber); border-color: color-mix(in srgb, var(--amber) 38%, transparent); }
+.tag.is-fault { color: var(--ember); border-color: color-mix(in srgb, var(--ember) 45%, transparent); }
+
+.ins-copy {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  background: var(--ink);
+  border: 1px solid var(--rule);
+  border-radius: var(--r);
+  padding: 4px 7px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color var(--dur) ease, border-color var(--dur) ease;
+}
+.ins-copy:hover { color: var(--text); border-color: var(--text-dim); }
+.ins-copy:focus-visible { outline: 2px solid var(--signal); outline-offset: 1px; }
+
+.ins-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 0 14px;
+}
+.ins-stats dt {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  opacity: 0.7;
+}
+.ins-stats dd { margin: 3px 0 0; font-family: var(--mono); font-size: 12px; color: var(--text); }
+
+.ins-fault {
+  display: grid;
+  gap: 3px;
+  margin: 12px 14px 0;
+  padding: 9px 11px;
+  border-left: 2px solid var(--ember);
+  background: color-mix(in srgb, var(--ember) 9%, transparent);
+  border-radius: 0 var(--r) var(--r) 0;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.ins-fault strong { font-family: var(--mono); font-size: 10.5px; color: var(--ember); }
+
+/* ------------------------------------------------------------------ tabs -- */
+
+.ins-tabs {
+  display: flex;
+  gap: 2px;
+  margin: 14px 14px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.ins-tab {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 9px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid transparent;
+  margin-bottom: -1px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.03em;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color var(--dur) ease;
+}
+.ins-tab:hover { color: var(--text); }
+.ins-tab.is-on { color: var(--text); border-bottom-color: var(--signal); }
+.ins-tab:focus-visible { outline: 2px solid var(--signal); outline-offset: -2px; }
+
+.ins-count {
+  font-size: 9px;
+  padding: 1px 4px;
+  border-radius: 7px;
+  background: var(--ink);
+  border: 1px solid var(--rule);
+  color: var(--text-dim);
+}
+
+/* ------------------------------------------------------------------ body -- */
+
+.ins-body { flex: 1; min-height: 0; overflow: auto; padding: 12px 14px 16px; }
+
+.ins-empty {
+  margin: 14px 0;
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.55;
+}
+
+.ins-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  cursor: pointer;
+  user-select: none;
+}
+.ins-toggle input { accent-color: var(--signal); margin: 0; }
+
+/* ------------------------------------------------------------------ diff -- */
+
+.diff { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
+
+.diff-row {
+  display: grid;
+  grid-template-columns: 12px minmax(60px, 34%) 1fr;
+  gap: 8px;
+  align-items: baseline;
+  padding: 6px 8px;
+  border-radius: 3px;
+  background: var(--ink);
+  border-left: 2px solid var(--rule);
+}
+.diff-row.is-added { border-left-color: var(--signal); }
+.diff-row.is-changed { border-left-color: var(--amber); }
+.diff-row.is-removed { border-left-color: var(--text-dim); opacity: 0.7; }
+.diff-row.is-unchanged { border-left-color: transparent; opacity: 0.5; }
+
+.diff-glyph {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  text-align: center;
+}
+.diff-row.is-added .diff-glyph { color: var(--signal); }
+.diff-row.is-changed .diff-glyph { color: var(--amber); }
+
+.diff-path {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--text);
+  word-break: break-word;
+}
+
+.diff-vals {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  line-height: 1.5;
+}
+.diff-vals.is-stacked { flex-direction: column; align-items: stretch; gap: 3px; }
+
+.diff-vals code {
+  min-width: 0;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+.diff-vals .was { color: var(--text-dim); text-decoration: line-through; text-decoration-thickness: 1px; opacity: 0.8; }
+.diff-row.is-removed .was { text-decoration: line-through; }
+.diff-vals .now { color: var(--text); }
+.diff-row.is-added .now { color: var(--signal); }
+.diff-arrow { color: var(--text-dim); flex-shrink: 0; }
+.diff-vals.is-stacked .diff-arrow { display: none; }
+
+/* ----------------------------------------------------------------- calls -- */
+
+.calls { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+
+.call {
+  background: var(--ink);
+  border: 1px solid var(--rule);
+  border-left: 2px solid var(--rule);
+  border-radius: var(--r);
+  overflow: hidden;
+}
+.call.is-fault { border-left-color: var(--ember); }
+
+.call-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  padding: 8px 10px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+}
+.call-head.is-static { cursor: default; }
+.call-head:focus-visible { outline: 2px solid var(--signal); outline-offset: -2px; }
+
+.call-chevron { font-size: 9px; color: var(--text-dim); }
+.call-name {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--text);
+  word-break: break-all;
+}
+.call-meta { margin-left: auto; font-family: var(--mono); font-size: 10px; color: var(--text-dim); }
+
+.call-error {
+  margin: 0;
+  padding: 0 10px 9px 27px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--ember);
+}
+
+.call-body { padding: 0 10px 10px; }
+.call-body h4 {
+  margin: 6px 0 4px;
+  font-family: var(--mono);
+  font-size: 8.5px;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  color: var(--text-dim);
+}
+
+.call-stats { display: flex; gap: 16px; margin: 0; padding: 0 10px 9px 10px; }
+.call-stats dt {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  opacity: 0.7;
+}
+.call-stats dd { margin: 2px 0 0; font-family: var(--mono); font-size: 11px; color: var(--text); }
+
+/* ------------------------------------------------------------------ json -- */
+
+.json {
+  margin: 0;
+  padding: 9px 10px;
+  max-height: 320px;
+  overflow: auto;
+  background: var(--ink);
+  border: 1px solid var(--rule);
+  border-radius: var(--r);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  line-height: 1.55;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ins-tab, .ins-copy { transition: none; }
+}
