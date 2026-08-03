@@ -1,5 +1,10 @@
 # Agent Trace Viewer
 
+**[Live demo →](https://agent-trace-viewer.vercel.app/)**
+
+![Agent Trace Viewer](<img width="188" height="106" alt="Screen Recording 2026-08-03 122404" src="https://github.com/user-attachments/assets/6952a473-1d03-4b26-a047-1d078f4eec2b" />
+)
+
 A visual debugger for LangGraph runs. Load a trace, see the graph that executed, the
 timeline it executed on, and the state at every step.
 
